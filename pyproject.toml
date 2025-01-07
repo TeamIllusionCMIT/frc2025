@@ -1,0 +1,55 @@
+[project]
+name = "frc2025"
+version = "0.1.0"
+description = "Add your description here"
+authors = [
+    { name = "te", email = "thrzl@icloud.com" }
+]
+dependencies = [
+    "robotpy[commands2,navx,rev,pathplannerlib]>=2025.1.1.1",
+    "photonlibpy>=2025.0.0b8",
+    "pint>=0.24.4",
+]
+readme = "README.md"
+requires-python = ">= 3.8"
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.rye]
+managed = true
+dev-dependencies = [
+    "ruff>=0.8.6",
+    "basedpyright>=1.23.2",
+]
+
+[tool.pyright]
+reportUnknownParameterType = false
+
+[tool.hatch.metadata]
+allow-direct-references = true
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/frc2025"]
+
+[tool.robotpy]
+
+robotpy_version = "2025.1.1.1"
+
+robotpy_extras = [
+    # "all",
+    # "apriltag",
+    "commands2",
+    # "cscore",
+    "navx",
+    "pathplannerlib",
+    # "phoenix6",
+    "rev",
+    # "romi",
+    # "sim",
+    # "xrp",
+]
+
+# Other pip packages to install
+requires = ["pint"]
