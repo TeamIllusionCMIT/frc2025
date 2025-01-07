@@ -17,13 +17,10 @@ class Robot(TimedCommandRobot):
         self.auto_active = Preferences.getBoolean("auto_active", False)
 
     def autonomousPeriodic(self) -> None:
-        if self.auto_active:
-            self.subsystems.shooter.shoot()
-            # self.subsystems.drivetrain.stop()
+        ...
 
     def autonomousExit(self) -> None:
-        self.subsystems.drivetrain.stop()
-        self.subsystems.arm.mode = 0
+        self.core.drive.stop()
 
     def testInit(self) -> None:
         CommandScheduler.getInstance().cancelAll()
