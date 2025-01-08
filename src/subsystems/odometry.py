@@ -2,7 +2,7 @@ from commands2.subsystem import Subsystem
 from wpimath.estimator import MecanumDrivePoseEstimator
 from wpimath.kinematics import MecanumDriveKinematics
 from wpimath.geometry import Translation2d, Rotation2d, Pose2d
-from constants import Chassis
+from src.constants import Chassis
 from src.subsystems.drive import Drive
 from src.subsystems.vision import Vision
 from wpilib import AnalogGyro, Field2d, Timer

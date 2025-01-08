@@ -8,7 +8,7 @@ from src.subsystems.drive import Drive
 from src.subsystems.odometry import Odometry
 from src.subsystems.vision import Vision
 from config import DriveMotorConfig, PhotonCameraConfig
-from constants import unit
+from src.constants import unit
 
 from pathplannerlib.auto import AutoBuilder
 from pathplannerlib.config import RobotConfig, PIDConstants

@@ -1,6 +1,6 @@
 from commands2 import CommandScheduler, TimedCommandRobot
 from wpilib import Preferences, CameraServer
-from robotcontainer import RobotContainer
+from src.robotcontainer import RobotContainer
 
 
 class Robot(TimedCommandRobot):
