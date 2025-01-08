@@ -1,5 +1,5 @@
 from commands2 import CommandScheduler, TimedCommandRobot
-from wpilib import Preferences
+from wpilib import Preferences, CameraServer
 from robotcontainer import RobotContainer
 
 
@@ -9,15 +9,20 @@ class Robot(TimedCommandRobot):
     def __init__(self):
         super().__init__()
 
+        # so we can see the webcam feed
+        CameraServer().launch()
+
         self.core = RobotContainer()
 
         Preferences.initBoolean("auto_active", False)
 
+    def robotPeriodic(self) -> None:
+        CommandScheduler.getInstance().run()
+
     def autonomousInit(self) -> None:
         self.auto_active = Preferences.getBoolean("auto_active", False)
 
-    def autonomousPeriodic(self) -> None:
-        ...
+    def autonomousPeriodic(self) -> None: ...
 
     def autonomousExit(self) -> None:
         self.core.drive.stop()
