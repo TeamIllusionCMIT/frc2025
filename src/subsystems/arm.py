@@ -6,6 +6,8 @@ from config import ArmConfig
 
 
 class Arm(ProfiledPIDSubsystem):
+    __slots__ = ("arm_motor", "encoder", "feedforward")
+
     def __init__(self, config: ArmConfig):
         super().__init__(
             controller=ProfiledPIDController(

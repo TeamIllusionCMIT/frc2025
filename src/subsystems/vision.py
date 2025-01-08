@@ -16,6 +16,8 @@ class Vision(Subsystem):
     apriltag vision via photonvision
     """
 
+    __slots__ = ("camera", "pose_estimator")
+
     def __init__(self, config: PhotonCameraConfig):
         super().__init__()
 
@@ -39,14 +41,29 @@ class Vision(Subsystem):
         self.camera.setDriverMode(enable)
 
     def latest_result(self) -> Optional[PhotonPipelineResult]:
+        """get the latest photonvision result
+
+        Returns:
+            Optional[PhotonPipelineResult]: the result. can be none
+        """
         if unread_results := self.camera.getAllUnreadResults():
             return unread_results[-1]  # most recent result
 
     def best_target(self) -> Optional[PhotonTrackedTarget]:
+        """get the current best target
+
+        Returns:
+            Optional[PhotonTrackedTarget]: the target. can be none
+        """
         if result := self.latest_result():
             return result.getBestTarget()
 
     def estimate_pose(self) -> Optional[Tuple[Optional[Pose3d], float]]:
+        """estimate the current pose of the robot.
+
+        Returns:
+            Optional[Tuple[Optional[Pose3d], float]]: optional tuple of the pose and the timestamp. pose can be none
+        """
         self.driver_mode = False
 
         if latest_result := self.latest_result():
@@ -57,11 +74,27 @@ class Vision(Subsystem):
             )
 
     def get_apriltag_info(self, tag_id: int) -> Tuple[Quantity, Quantity]:
+        """helper function to fetch physical properties of an apriltag.
+
+        Args:
+            tag_id (int): _description_
+
+        Returns:
+            Tuple[Quantity, Quantity]: _description_
+        """
         return AprilTags.APRILTAG_MOUNT_HEIGHTS[
             tag_id
         ], 30 * unit.deg if tag_id in AprilTags.ANGLED_APRILTAGS else 0 * unit.deg  # type: ignore
 
     def calculate_distance(self, target: PhotonTrackedTarget) -> Translation3d:
+        """calculate the distance between the robot and a target using trigonometry.
+
+        Args:
+            target (PhotonTrackedTarget): the target to calculate the distance to
+
+        Returns:
+            Translation3d: an object representing the translation from the robot to the target
+        """
         # yaw is horizontal turn, pitch is vertical turn
         target_height, target_pitch = self.get_apriltag_info(target.getFiducialId())
 
