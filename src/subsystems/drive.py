@@ -1,80 +1,158 @@
 from typing import NamedTuple
-from config import MotorPorts
+
+from pathplannerlib.auto import DriveFeedforwards
+from wpimath.kinematics import (
+    ChassisSpeeds,
+    MecanumDriveWheelPositions,
+    MecanumDriveWheelSpeeds,
+)
+
+from config import DriveMotorConfig
 from commands2.subsystem import Subsystem
 from rev import SparkMax, SparkLowLevel, SparkMaxConfig, SparkRelativeEncoder
 from wpilib.drive import MecanumDrive
-from wpilib.shuffleboard import Shuffleboard
+from wpilib import SmartDashboard
+from wpimath.filter import SlewRateLimiter
+
+
+class Encoders(NamedTuple):
+    front_left: SparkRelativeEncoder
+    rear_left: SparkRelativeEncoder
+
+    front_right: SparkRelativeEncoder
+    rear_right: SparkRelativeEncoder
 
 
 class Drive(Subsystem):
-    __slots__ = ("drivetrain", "encoders")
+    __slots__ = (
+        "drivetrain",
+        "encoders",
+        "forward_limiter",
+        "sideways_limiter",
+        "holonomic_controller",
+        "kinematics",
+    )
     """
     mecanum-based drive subsystem; controls the drivetrain
     """
+    # TODO: add braking via PID controllers
 
     def __init__(
         self,
-        motor_ports: MotorPorts,
+        motor_ports: DriveMotorConfig,
         motor_type: SparkLowLevel.MotorType = SparkLowLevel.MotorType.kBrushless,
     ):
         super().__init__()
 
         # initialize motors
-        front_left = SparkMax(motor_ports.front_left, motor_type)
-        rear_left = SparkMax(motor_ports.rear_left, motor_type)
+        self.front_left = SparkMax(motor_ports.front_left_port, motor_type)
+        self.rear_left = SparkMax(motor_ports.rear_left_port, motor_type)
 
-        rear_right = SparkMax(motor_ports.rear_right, motor_type)
-        front_right = SparkMax(motor_ports.front_right, motor_type)
+        self.rear_right = SparkMax(motor_ports.rear_right_port, motor_type)
+        self.front_right = SparkMax(motor_ports.front_right_port, motor_type)
 
         # apply configuration
         left_config = SparkMaxConfig().setIdleMode(SparkMaxConfig.IdleMode.kCoast)
         right_config = left_config.inverted(True)
 
-        front_left.configure(
+        self.front_left.configure(
             left_config,
             SparkMax.ResetMode.kResetSafeParameters,
             SparkMax.PersistMode.kPersistParameters,
         )
-        rear_left.configure(
+        self.rear_left.configure(
             left_config,
             SparkMax.ResetMode.kResetSafeParameters,
             SparkMax.PersistMode.kPersistParameters,
         )
 
-        front_right.configure(
+        self.front_right.configure(
             right_config,
             SparkMax.ResetMode.kResetSafeParameters,
             SparkMax.PersistMode.kPersistParameters,
         )
-        rear_right.configure(
+        self.rear_right.configure(
             right_config,
             SparkMax.ResetMode.kResetSafeParameters,
             SparkMax.PersistMode.kPersistParameters,
         )
-
-        class Encoders(NamedTuple):
-            front_left: SparkRelativeEncoder
-            rear_left: SparkRelativeEncoder
-
-            front_right: SparkRelativeEncoder
-            rear_right: SparkRelativeEncoder
 
         self.encoders = Encoders(
-            front_left.getEncoder(),
-            rear_left.getEncoder(),
-            front_right.getEncoder(),
-            rear_right.getEncoder(),
+            self.front_left.getEncoder(),
+            self.rear_left.getEncoder(),
+            self.front_right.getEncoder(),
+            self.rear_right.getEncoder(),
         )
 
-        self.drivetrain = MecanumDrive(front_left, rear_left, rear_right, front_right)
+        self.drivetrain = MecanumDrive(
+            self.front_left, self.rear_left, self.rear_right, self.front_right
+        )
         self.drivetrain.setExpiration(0.1)
 
-        Shuffleboard.getTab("Comp").add(self.drivetrain)
+        # soften the joystick inputs. it'll take 1.33333 seconds to reach max speed.
+        self.forward_limiter = SlewRateLimiter(0.75)
+        self.sideways_limiter = SlewRateLimiter(0.75)
+
+        SmartDashboard.putData(self.drivetrain)
+
+    def square_magnitude(self, input: float) -> float:
+        """
+        square a number's magnitude without changing sign. helper function for softening inputs
+        """
+        negativity = 1 if input > 0 else -1
+        return (input**2) * negativity
 
     def drive(self, forward: float, sideways: float, rotate: float):
+        """drive the robot using mecanum drive.
+
+        Args:
+            forward (float): the forward input
+            sideways (float): the sideways input
+            rotate (float): the rotation input
+        """
         self.drivetrain.driveCartesian(  # try polar, perhaps?
-            forward, sideways, rotate
+            self.forward_limiter.calculate(forward),
+            self.sideways_limiter.calculate(sideways),
+            self.square_magnitude(rotate),
+        )
+
+    def drive_relative(self, speeds: ChassisSpeeds, feedforward: DriveFeedforwards):
+        """drive the robot based on chassisspeeds
+
+        Args:
+            speeds (ChassisSpeeds): the speeds to drive at
+            feedforward (DriveFeedforwards): feedforwards to apply
+        """
+        # i have no clue how this feedforward thing works
+        # TODO: add feedforward
+        self.drive(speeds.vx, speeds.vy, speeds.omega)
+
+    def get_wheel_positions(self) -> MecanumDriveWheelPositions:
+        """gets the robot's current wheel positions from encoders.
+
+        Returns:
+            MecanumDriveWheelPositions: the current wheel position.
+        """
+        positions = MecanumDriveWheelPositions()
+        positions.frontLeft = self.encoders.front_left.getPosition()
+        positions.rearLeft = self.encoders.rear_left.getPosition()
+        positions.frontRight = self.encoders.front_right.getPosition()
+        positions.rearRight = self.encoders.rear_right.getPosition()
+        return positions
+
+    def get_wheel_speeds(self) -> MecanumDriveWheelSpeeds:
+        """get's the robot's current wheel speeds from encoders.
+
+        Returns:
+            MecanumDriveWheelSpeeds: the current wheel speeds.
+        """
+        return MecanumDriveWheelSpeeds(
+            self.encoders.front_left.getVelocity(),
+            self.encoders.rear_left.getVelocity(),
+            self.encoders.front_right.getVelocity(),
+            self.encoders.rear_right.getVelocity(),
         )
 
     def stop(self):
+        """stop the robot."""
         self.drivetrain.stopMotor()

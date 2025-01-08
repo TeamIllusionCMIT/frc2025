@@ -1,23 +1,28 @@
 from commands2 import RunCommand
 from commands2.button import CommandXboxController
 from photonlibpy.photonPoseEstimator import PoseStrategy
+from wpilib import AnalogGyro, DriverStation, SmartDashboard
 from wpimath.geometry import Rotation3d, Transform3d, Translation3d
 
 from src.subsystems.drive import Drive
 from src.subsystems.odometry import Odometry
 from src.subsystems.vision import Vision
-from config import MotorPorts, PhotonCameraConfig
+from config import DriveMotorConfig, PhotonCameraConfig
 from constants import unit
 
+from pathplannerlib.auto import AutoBuilder
+from pathplannerlib.config import RobotConfig, PIDConstants
+from pathplannerlib.controller import PPHolonomicDriveController
+from wpilib import RobotController
 
 class RobotContainer:
     # slots to define what attributes the class should expect to hold
-    __slots__ = ("vision", "drive", "arm", "odometry", "controller")
+    __slots__ = ("vision", "drive", "arm", "odometry", "controller", "autoChooser")
 
     def __init__(self):
         self.controller = CommandXboxController(0)
 
-        motor_ports = MotorPorts(0, 1, 2, 3)
+        motor_ports = DriveMotorConfig(0, 1, 2, 3)
         self.drive = Drive(motor_ports)
         self.arm = None
 
@@ -31,7 +36,29 @@ class RobotContainer:
             0 * unit.deg,
         )
         self.vision = Vision(vision_config)
-        self.odometry = Odometry(self.drive, self.vision)
+        self.odometry = Odometry(self.drive, self.vision, AnalogGyro(0))
+
+        config = RobotConfig.fromGUISettings()
+        AutoBuilder.configure(
+            self.odometry.estimate_pose,
+            self.odometry.reset,
+            lambda: self.odometry.kinematics.toChassisSpeeds(
+                self.drive.get_wheel_speeds()
+            ),
+            self.drive.drive_relative,
+            PPHolonomicDriveController(  # PPHolonomicController is the built in path following controller for holonomic drive trains
+                PIDConstants(5.0, 0.0, 0.0),  # Translation PID constants
+                PIDConstants(5.0, 0.0, 0.0),  # Rotation PID constants
+            ),
+            config,
+            self.should_flip_path,
+            self.drive,
+        )
+
+        self.autoChooser = AutoBuilder.buildAutoChooser()
+
+        SmartDashboard.putData(self.autoChooser)
+        SmartDashboard.putNumber("Voltage", RobotController.getBatteryVoltage())
 
         self.drive.setDefaultCommand(
             RunCommand(
@@ -43,6 +70,9 @@ class RobotContainer:
                 self.drive,
             )
         )
+
+    def should_flip_path(self) -> bool:
+        return DriverStation.getAlliance() == DriverStation.Alliance.kRed
 
     def configureBindings(self):
         # configure button bindings; here's some examples
@@ -56,8 +86,9 @@ class RobotContainer:
         # self.controller.leftTrigger(0.01).onTrue(
         #     InstantCommand(lambda: ...)
         # )
+        #
+        # we don't have any buttons to configure bindings for yet, so we'll leave this empty
         ...
 
     def getAutonomousCommand(self):
-        # dummy function to allow selection of autonomous based on position
-        ...
+        return self.autoChooser.getSelected()

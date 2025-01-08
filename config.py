@@ -14,12 +14,12 @@ class PhotonCameraConfig(NamedTuple):
     mount_angle: Quantity  # degrees
 
 
-class MotorPorts(NamedTuple):
-    front_left: int
-    rear_left: int
+class DriveMotorConfig(NamedTuple):
+    front_left_port: int
+    rear_left_port: int
 
-    front_right: int
-    rear_right: int
+    front_right_port: int
+    rear_right_port: int
 
 
 class ArmConfig(NamedTuple):
