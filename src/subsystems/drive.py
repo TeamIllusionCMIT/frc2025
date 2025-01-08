@@ -89,9 +89,9 @@ class Drive(Subsystem):
         )
         self.drivetrain.setExpiration(0.1)
 
-        # soften the joystick inputs. it'll take 1.33333 seconds to reach max speed.
-        self.forward_limiter = SlewRateLimiter(0.75)
-        self.sideways_limiter = SlewRateLimiter(0.75)
+        # soften the joystick inputs. it'll take 1 second to reach max speed.
+        self.forward_limiter = SlewRateLimiter(1)
+        self.sideways_limiter = SlewRateLimiter(1)
 
         SmartDashboard.putData(self.drivetrain)
 
