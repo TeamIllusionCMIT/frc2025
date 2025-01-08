@@ -22,10 +22,10 @@ from constants import unit
 
 # file overview
 
-## config.py
+### config.py
 classes to configure different things, namely the vision subsystem and motors.
 
-## robot.py
+### robot.py
 the main file. really just imports from robotcontainer.py and creates a TimedCommandRobot object
 
 
