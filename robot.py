@@ -25,7 +25,7 @@ class Robot(TimedCommandRobot):
     def autonomousPeriodic(self) -> None: ...
 
     def autonomousExit(self) -> None:
-        self.core.drive.stop()
+        self.core.drivetrain.stop()
 
     def testInit(self) -> None:
         CommandScheduler.getInstance().cancelAll()

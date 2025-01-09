@@ -17,15 +17,16 @@ from wpilib import RobotController
 
 class RobotContainer:
     # slots to define what attributes the class should expect to hold
-    __slots__ = ("vision", "drive", "arm", "odometry", "controller", "autoChooser")
+    __slots__ = ("vision", "drivetrain", "arm", "odometry", "controller", "autoChooser")
 
     def __init__(self):
         self.controller = CommandXboxController(0)
 
         motor_ports = DriveMotorConfig(0, 1, 2, 3)
-        self.drive = Drive(motor_ports)
+        self.drivetrain = Drive(motor_ports)
         self.arm = None
 
+        # configure vision and odometry
         vision_config = PhotonCameraConfig(
             "apriltags",
             PoseStrategy.MULTI_TAG_PNP_ON_COPROCESSOR,
@@ -36,38 +37,40 @@ class RobotContainer:
             0 * unit.deg,
         )
         self.vision = Vision(vision_config)
-        self.odometry = Odometry(self.drive, self.vision, AnalogGyro(0))
+        self.odometry = Odometry(self.drivetrain, self.vision, AnalogGyro(0))
 
+        # configure pathplannerlib
         config = RobotConfig.fromGUISettings()
         AutoBuilder.configure(
             self.odometry.estimate_pose,
             self.odometry.reset,
             lambda: self.odometry.kinematics.toChassisSpeeds(
-                self.drive.get_wheel_speeds()
+                self.drivetrain.get_wheel_speeds()
             ),
-            self.drive.drive_relative,
+            self.drivetrain.drive_relative,
             PPHolonomicDriveController(  # PPHolonomicController is the built in path following controller for holonomic drive trains
                 PIDConstants(5.0, 0.0, 0.0),  # Translation PID constants
                 PIDConstants(5.0, 0.0, 0.0),  # Rotation PID constants
             ),
             config,
             self.should_flip_path,
-            self.drive,
+            self.drivetrain,
         )
 
         self.autoChooser = AutoBuilder.buildAutoChooser()
 
+        # add autonomous selection and battery voltage to dashboard
         SmartDashboard.putData(self.autoChooser)
         SmartDashboard.putNumber("Voltage", RobotController.getBatteryVoltage())
 
-        self.drive.setDefaultCommand(
+        self.drivetrain.setDefaultCommand(
             RunCommand(
-                lambda: self.drive.drive(
+                lambda: self.drivetrain.drive(
                     -self.controller.getLeftY(),
                     self.controller.getLeftX(),
                     self.controller.getRightX(),
                 ),
-                self.drive,
+                self.drivetrain,
             )
         )
 
