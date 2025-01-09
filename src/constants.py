@@ -1,4 +1,4 @@
-from math import pi
+from math import pi, sqrt
 from pint import UnitRegistry, Quantity
 from dataclasses import dataclass, field
 
@@ -47,6 +47,8 @@ class AprilTags:
 
 @dataclass(frozen=True)
 class Chassis:
+    LENGTH = 0.82 * unit.meter
+    WIDTH = 0.67 * unit.meter
     WHEEL_RADIUS: Quantity = (5 * unit.inch).to(unit.meter)  # type: ignore
     WHEEL_DIAMETER: Quantity = WHEEL_RADIUS * 2  # in meters
     WHEEL_CIRCUMFERENCE: Quantity = WHEEL_DIAMETER * pi * 2
@@ -57,8 +59,10 @@ class Chassis:
         unit.meter
     )  # distance from front wheels to back wheels, in meters
     GEAR_RATIO: float = 8.450  # gear ratio of the drivetrain. from the kitbot datasheet
+    LINEAR_SPEED = (
+        (WHEEL_RADIUS * Vortex.FREE_SPEED) / GEAR_RATIO
+    ).to(unit.mps)  # in m/s
+    ROBOT_RADIUS: Quantity = (sqrt(((LENGTH.magnitude/2)**2) + ((WIDTH.magnitude/2)**2))) * unit.meter  # in meters
+    ANGULAR_SPEED = (LINEAR_SPEED / ROBOT_RADIUS).to(unit("rad/s"))  # in rad/s
 
 
-LINEAR_SPEED = (
-    (Chassis.WHEEL_RADIUS * Vortex.FREE_SPEED) / Chassis.GEAR_RATIO
-).to(unit.mps)  # in m/s

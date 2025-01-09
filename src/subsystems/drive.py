@@ -1,4 +1,4 @@
-from typing import NamedTuple
+from typing import NamedTuple, Tuple
 
 from pathplannerlib.auto import DriveFeedforwards
 from wpimath.kinematics import (
@@ -13,6 +13,7 @@ from rev import SparkMax, SparkLowLevel, SparkMaxConfig, SparkRelativeEncoder
 from wpilib.drive import MecanumDrive
 from wpilib import SmartDashboard
 from wpimath.filter import SlewRateLimiter
+from constants import Chassis
 
 
 class Encoders(NamedTuple):
@@ -116,6 +117,24 @@ class Drive(Subsystem):
             self.square_magnitude(rotate),
         )
 
+    @classmethod
+    def normalize_chassis_speeds(
+        cls, speeds: ChassisSpeeds
+    ) -> Tuple[float, float, float]:
+        """normalize the chassis speeds to a max of 1.0
+
+        Args:
+            speeds (ChassisSpeeds): the speeds to normalize
+
+        Returns:
+            Tuple[float, float, float]: the normalized speeds
+        """
+        return (
+            speeds.vx / Chassis.LINEAR_SPEED,
+            speeds.vy / Chassis.LINEAR_SPEED,
+            speeds.omega / Chassis.ANGULAR_SPEED,
+        )
+
     def drive_relative(self, speeds: ChassisSpeeds, feedforward: DriveFeedforwards):
         """drive the robot based on chassisspeeds
 
@@ -125,7 +144,7 @@ class Drive(Subsystem):
         """
         # i have no clue how this feedforward thing works
         # TODO: add feedforward
-        self.drive(speeds.vx, speeds.vy, speeds.omega)
+        self.drive(*self.normalize_chassis_speeds(speeds))
 
     def get_wheel_positions(self) -> MecanumDriveWheelPositions:
         """gets the robot's current wheel positions from encoders.
