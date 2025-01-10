@@ -21,7 +21,7 @@ build-backend = "hatchling.build"
 managed = true
 dev-dependencies = [
     "ruff>=0.8.6",
-    "basedpyright>=1.23.2",
+    "pyright>=1.1.391",
 ]
 
 [tool.pyright]
