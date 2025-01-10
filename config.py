@@ -24,8 +24,8 @@ class DriveMotorConfig(NamedTuple):
 
 class ArmConfig(NamedTuple):
     arm_port: int
-    top_roller_port: int
-    bottom_roller_port: int
+    roller_port_one: int
+    roller_port_two: int
 
     K_P: float
     K_I: float
