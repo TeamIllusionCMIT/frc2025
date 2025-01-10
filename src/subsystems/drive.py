@@ -13,7 +13,7 @@ from rev import SparkMax, SparkLowLevel, SparkMaxConfig, SparkRelativeEncoder
 from wpilib.drive import MecanumDrive
 from wpilib import SmartDashboard
 from wpimath.filter import SlewRateLimiter
-from constants import Chassis
+from src.constants import Chassis
 
 
 class Encoders(NamedTuple):
