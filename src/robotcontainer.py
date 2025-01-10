@@ -15,6 +15,7 @@ from pathplannerlib.config import RobotConfig, PIDConstants
 from pathplannerlib.controller import PPHolonomicDriveController
 from wpilib import RobotController
 
+
 class RobotContainer:
     # slots to define what attributes the class should expect to hold
     __slots__ = ("vision", "drivetrain", "arm", "odometry", "controller", "autoChooser")

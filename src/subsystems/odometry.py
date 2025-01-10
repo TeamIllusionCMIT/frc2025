@@ -51,8 +51,7 @@ class Odometry(Subsystem):
         SmartDashboard.putData(self.field)
 
     def periodic(self) -> None:
-        """update the pose estimator with the current wheel positions. additionally, add vision data every one second.
-        """        
+        """update the pose estimator with the current wheel positions. additionally, add vision data every one second."""
         # update pose (and field)
         new_pose = self.pose_estimator.update(
             self.gyro.getRotation2d(), self.drivetrain.get_wheel_positions()
@@ -71,7 +70,9 @@ class Odometry(Subsystem):
         if vision_result:
             vision_estimate, timestamp = vision_result
             if vision_estimate:
-                self.pose_estimator.addVisionMeasurement(vision_estimate.toPose2d(), timestamp)
+                self.pose_estimator.addVisionMeasurement(
+                    vision_estimate.toPose2d(), timestamp
+                )
 
     def estimate_pose(self) -> Pose2d:
         """get the current estimated pose from the pose estimator.

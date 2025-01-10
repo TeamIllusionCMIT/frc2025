@@ -59,10 +59,10 @@ class Chassis:
         unit.meter
     )  # distance from front wheels to back wheels, in meters
     GEAR_RATIO: float = 8.450  # gear ratio of the drivetrain. from the kitbot datasheet
-    LINEAR_SPEED = (
-        (WHEEL_RADIUS * Vortex.FREE_SPEED) / GEAR_RATIO
-    ).to(unit.mps)  # in m/s
-    ROBOT_RADIUS: Quantity = (sqrt(((LENGTH.magnitude/2)**2) + ((WIDTH.magnitude/2)**2))) * unit.meter  # in meters
+    LINEAR_SPEED = ((WHEEL_RADIUS * Vortex.FREE_SPEED) / GEAR_RATIO).to(
+        unit.mps
+    )  # in m/s
+    ROBOT_RADIUS: Quantity = (
+        sqrt(((LENGTH.magnitude / 2) ** 2) + ((WIDTH.magnitude / 2) ** 2))
+    ) * unit.meter  # in meters
     ANGULAR_SPEED = (LINEAR_SPEED / ROBOT_RADIUS).to(unit("rad/s"))  # in rad/s
-
-
