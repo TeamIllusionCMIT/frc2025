@@ -4,7 +4,7 @@ from rev import SparkLowLevel, SparkMax
 from wpilib import MotorControllerGroup
 from wpimath.controller import ProfiledPIDController, ArmFeedforward
 from config import ArmConfig
-from constants import Vortex
+from src.constants import Vortex
 
 
 class Arm(ProfiledPIDSubsystem):

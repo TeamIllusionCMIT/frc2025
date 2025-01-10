@@ -8,6 +8,8 @@ from wpimath.trajectory import TrapezoidProfile
 from src.subsystems.drive import Drive
 from src.subsystems.odometry import Odometry
 from src.subsystems.vision import Vision
+from src.subsystems.arm import Arm
+
 from config import DriveMotorConfig, PhotonCameraConfig, ArmConfig
 from src.constants import unit
 
@@ -16,7 +18,6 @@ from pathplannerlib.config import RobotConfig, PIDConstants
 from pathplannerlib.controller import PPHolonomicDriveController
 from wpilib import RobotController
 
-from subsystems.arm import Arm
 
 
 class RobotContainer:
@@ -28,9 +29,9 @@ class RobotContainer:
 
         motor_ports = DriveMotorConfig(0, 1, 2, 3)
         self.drivetrain = Drive(motor_ports)
-        self.arm = Arm(ArmConfig(
-            4, 5, 6, 5.0, 0.0, 0.0, TrapezoidProfile.Constraints(1.0, 1.0)
-        ))
+        self.arm = Arm(
+            ArmConfig(4, 5, 6, 5.0, 0.0, 0.0, TrapezoidProfile.Constraints(1.0, 1.0))
+        )
 
         # configure vision and odometry
         vision_config = PhotonCameraConfig(
