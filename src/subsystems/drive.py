@@ -104,18 +104,58 @@ class Drive(Subsystem):
 
     def brake(self):
         """
-        brakes the robot using PID controllers.
+        set drivetrain to brake mode.
         """
+        left_brake_config = SparkMaxConfig().setIdleMode(SparkMaxConfig.IdleMode.kBrake)
+        right_brake_config = left_brake_config.inverted(True)
 
-        self.front_left.set(
-            self.pid.calculate(self.encoders.front_left.getVelocity(), 0)
+        self.front_left.configure(
+            left_brake_config,
+            SparkMax.ResetMode.kResetSafeParameters,
+            SparkMax.PersistMode.kPersistParameters,
         )
-        self.rear_left.set(self.pid.calculate(self.encoders.rear_left.getVelocity(), 0))
-        self.front_right.set(
-            self.pid.calculate(self.encoders.front_right.getVelocity(), 0)
+        self.rear_left.configure(
+            left_brake_config,
+            SparkMax.ResetMode.kResetSafeParameters,
+            SparkMax.PersistMode.kPersistParameters,
         )
-        self.rear_right.set(
-            self.pid.calculate(self.encoders.rear_right.getVelocity(), 0)
+        self.front_right.configure(
+            right_brake_config,
+            SparkMax.ResetMode.kResetSafeParameters,
+            SparkMax.PersistMode.kPersistParameters,
+        )
+        self.rear_right.configure(
+            right_brake_config,
+            SparkMax.ResetMode.kResetSafeParameters,
+            SparkMax.PersistMode.kPersistParameters,
+        )
+
+    def coast(self):
+        """
+        set drivetrain to coast mode.
+        """
+        left_coast_config = SparkMaxConfig().setIdleMode(SparkMaxConfig.IdleMode.kCoast)
+        right_coast_config = left_coast_config.inverted(True)
+
+        self.front_left.configure(
+            left_coast_config,
+            SparkMax.ResetMode.kResetSafeParameters,
+            SparkMax.PersistMode.kPersistParameters,
+        )
+        self.rear_left.configure(
+            left_coast_config,
+            SparkMax.ResetMode.kResetSafeParameters,
+            SparkMax.PersistMode.kPersistParameters,
+        )
+        self.front_right.configure(
+            right_coast_config,
+            SparkMax.ResetMode.kResetSafeParameters,
+            SparkMax.PersistMode.kPersistParameters,
+        )
+        self.rear_right.configure(
+            right_coast_config,
+            SparkMax.ResetMode.kResetSafeParameters,
+            SparkMax.PersistMode.kPersistParameters,
         )
 
     def square_magnitude(self, input: float) -> float:

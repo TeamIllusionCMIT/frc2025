@@ -1,4 +1,4 @@
-from commands2 import CommandScheduler, TimedCommandRobot
+from commands2 import CommandScheduler, TimedCommandRobot, WaitCommand
 from wpilib import Preferences, CameraServer
 from src.robotcontainer import RobotContainer
 
@@ -20,12 +20,18 @@ class Robot(TimedCommandRobot):
         CommandScheduler.getInstance().run()
 
     def autonomousInit(self) -> None:
+        self.core.drivetrain.brake()
         self.auto_active = Preferences.getBoolean("auto_active", False)
 
     def autonomousPeriodic(self) -> None: ...
 
     def autonomousExit(self) -> None:
         self.core.drivetrain.stop()
+        WaitCommand(0.5).schedule()
+        self.core.drivetrain.coast()
+
+    def teleopInit(self) -> None:
+        self.core.drivetrain.coast()
 
     def testInit(self) -> None:
         CommandScheduler.getInstance().cancelAll()
