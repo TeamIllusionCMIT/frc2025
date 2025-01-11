@@ -59,6 +59,24 @@ class Arm(ProfiledPIDSubsystem):
         """
         return (self.encoder.getPosition() / Vortex.ENCODER_RESOLUTION.magnitude) * 360
 
+    @property
+    def is_up(self) -> bool:
+        return self.getMeasurement() > 45 # goal is about 50, but we want to be tolerant
+
+    def lower_arm(self):
+        if self.is_up:
+            self.move_arm(0)
+
+    def raise_arm(self):
+        if not self.is_up:
+            self.move_arm(50)
+
+    def toggle_arm(self):
+        if self.is_up:
+            self.move_arm(0)
+        else:
+            self.move_arm(50)
+
     def useOutput(self, output: float, setpoint: TTrapezoidProfileState):
         # we can add this in once we actually use wpilib sysid to profile the system
         # feedforward = self.feedforward.calculate(setpoint.position, setpoint.velocity)

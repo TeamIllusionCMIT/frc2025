@@ -49,6 +49,17 @@ class Vision(Subsystem):
         if unread_results := self.camera.getAllUnreadResults():
             return unread_results[-1]  # most recent result
 
+    def centermost_target(self) -> Optional[PhotonTrackedTarget]:
+        """get the centermost target
+
+        Returns:
+            Optional[PhotonTrackedTarget]: the target. can be none
+        """
+        if result := self.latest_result():
+            targets = result.getTargets()
+            if targets:
+                return sorted(targets, key=lambda t: t.getYaw())[0]
+
     def best_target(self) -> Optional[PhotonTrackedTarget]:
         """get the current best target
 
