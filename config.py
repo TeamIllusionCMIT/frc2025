@@ -3,6 +3,7 @@ from wpimath.geometry import Transform3d
 from wpimath.trajectory import TrapezoidProfile
 from photonlibpy.photonPoseEstimator import PoseStrategy
 from pint import Quantity
+from src.constants import Chassis
 
 
 class PhotonCameraConfig(NamedTuple):
@@ -20,6 +21,13 @@ class DriveMotorConfig(NamedTuple):
 
     front_right_port: int
     rear_right_port: int
+    
+    constraints: TrapezoidProfile.Constraints
+
+    K_P: float = 0.2
+    K_I: float = 0.0
+    K_D: float = 0.0
+
 
 
 class ArmConfig(NamedTuple):

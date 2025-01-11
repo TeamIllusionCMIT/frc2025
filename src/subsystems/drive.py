@@ -1,6 +1,7 @@
 from typing import NamedTuple, Tuple
 
 from pathplannerlib.auto import DriveFeedforwards
+from wpimath.controller import ProfiledPIDController
 from wpimath.kinematics import (
     ChassisSpeeds,
     MecanumDriveWheelPositions,
@@ -40,17 +41,17 @@ class Drive(Subsystem):
 
     def __init__(
         self,
-        motor_ports: DriveMotorConfig,
+        config: DriveMotorConfig,
         motor_type: SparkLowLevel.MotorType = SparkLowLevel.MotorType.kBrushless,
     ):
         super().__init__()
 
         # initialize motors
-        self.front_left = SparkMax(motor_ports.front_left_port, motor_type)
-        self.rear_left = SparkMax(motor_ports.rear_left_port, motor_type)
+        self.front_left = SparkMax(config.front_left_port, motor_type)
+        self.rear_left = SparkMax(config.rear_left_port, motor_type)
 
-        self.rear_right = SparkMax(motor_ports.rear_right_port, motor_type)
-        self.front_right = SparkMax(motor_ports.front_right_port, motor_type)
+        self.rear_right = SparkMax(config.rear_right_port, motor_type)
+        self.front_right = SparkMax(config.front_right_port, motor_type)
 
         # apply configuration
         left_config = SparkMaxConfig().setIdleMode(SparkMaxConfig.IdleMode.kCoast)
@@ -94,7 +95,30 @@ class Drive(Subsystem):
         self.forward_limiter = SlewRateLimiter(1)
         self.sideways_limiter = SlewRateLimiter(1)
 
+        self.pid = ProfiledPIDController(
+            config.K_P, config.K_I, config.K_D, config.constraints
+        )
+        self.pid.setTolerance(0.1, 0)
+
         SmartDashboard.putData(self.drivetrain)
+
+    def brake(self):
+        """
+        brakes the robot using PID controllers.
+        """
+
+        self.front_left.set(
+            self.pid.calculate(self.encoders.front_left.getVelocity(), 0)
+        )
+        self.rear_left.set(
+            self.pid.calculate(self.encoders.rear_left.getVelocity(), 0)
+        )
+        self.front_right.set(
+            self.pid.calculate(self.encoders.front_right.getVelocity(), 0)
+        )
+        self.rear_right.set(
+            self.pid.calculate(self.encoders.rear_right.getVelocity(), 0)
+        )
 
     def square_magnitude(self, input: float) -> float:
         """

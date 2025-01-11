@@ -11,7 +11,8 @@ from src.subsystems.vision import Vision
 from src.subsystems.arm import Arm
 
 from config import DriveMotorConfig, PhotonCameraConfig, ArmConfig
-from src.constants import unit
+from src.constants import unit, Chassis
+from src.commands.driver_assist import DriverAssist
 
 from pathplannerlib.auto import AutoBuilder
 from pathplannerlib.config import RobotConfig, PIDConstants
@@ -19,15 +20,22 @@ from pathplannerlib.controller import PPHolonomicDriveController
 from wpilib import RobotController
 
 
-
 class RobotContainer:
     # slots to define what attributes the class should expect to hold
-    __slots__ = ("vision", "drivetrain", "arm", "odometry", "controller", "autoChooser")
+    __slots__ = ("vision", "drivetrain", "arm", "odometry", "controller", "auto_chooser", "driver_assist")
 
     def __init__(self):
         self.controller = CommandXboxController(0)
 
-        motor_ports = DriveMotorConfig(0, 1, 2, 3)
+        motor_ports = DriveMotorConfig(
+            front_left_port=0,
+            rear_left_port=1,
+            front_right_port=2,
+            rear_right_port=3,
+            constraints=TrapezoidProfile.Constraints(
+                Chassis.LINEAR_SPEED.magnitude, 4.1
+            ),
+        )  # 4.1 is from pathplanner's calculations
         self.drivetrain = Drive(motor_ports)
         self.arm = Arm(
             ArmConfig(4, 5, 6, 5.0, 0.0, 0.0, TrapezoidProfile.Constraints(1.0, 1.0))
@@ -64,10 +72,10 @@ class RobotContainer:
             self.drivetrain,
         )
 
-        self.autoChooser = AutoBuilder.buildAutoChooser()
+        self.auto_chooser = AutoBuilder.buildAutoChooser()
 
         # add autonomous selection and battery voltage to dashboard
-        SmartDashboard.putData(self.autoChooser)
+        SmartDashboard.putData(self.auto_chooser)
         SmartDashboard.putNumber("Voltage", RobotController.getBatteryVoltage())
 
         self.drivetrain.setDefaultCommand(
@@ -80,6 +88,8 @@ class RobotContainer:
                 self.drivetrain,
             )
         )
+
+        self.driver_assist = DriverAssist(self.vision, self.drivetrain, self.controller)
 
     def should_flip_path(self) -> bool:
         return DriverStation.getAlliance() == DriverStation.Alliance.kRed
@@ -98,7 +108,21 @@ class RobotContainer:
         # )
         #
         # we don't have any buttons to configure bindings for yet, so we'll leave this empty
-        ...
+
+        self.controller.x().onTrue(
+            RunCommand(self.arm.raise_arm, self.arm).andThen(
+                RunCommand(lambda: self.arm.intake(1), self.arm)
+            )
+        )
+        self.controller.leftTrigger(0.01).whileTrue(
+            self.driver_assist.align_to_target()  # replace with alignment command
+        )
+        self.controller.rightTrigger(0.01).whileTrue(
+            RunCommand(lambda: self.arm.expel(1), self.arm)
+        )
+        self.controller.b().whileTrue(
+            RunCommand(self.drivetrain.brake, self.drivetrain)
+        )
 
     def getAutonomousCommand(self):
-        return self.autoChooser.getSelected()
+        return self.auto_chooser.getSelected()
