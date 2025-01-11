@@ -39,5 +39,5 @@ class DriverAssist:
                 side_motion,
                 self.drivetrain.pid.calculate(target.getSkew(), 0),
             ),
-            self.drivetrain
+            self.drivetrain,
         )

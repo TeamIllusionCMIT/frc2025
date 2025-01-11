@@ -18,10 +18,16 @@ class Arm(ProfiledPIDSubsystem):
             initial_position=0,
         )
         self.arm_motor = SparkMax(config.arm_port, SparkLowLevel.MotorType.kBrushless)
-        
-        roller_motor_one = SparkMax(config.roller_port_one, SparkLowLevel.MotorType.kBrushless)
-        roller_motor_two = SparkMax(config.roller_port_two, SparkLowLevel.MotorType.kBrushless)
-        roller_motor_two.setInverted(True) # we're going to have to figure out which one to actually invert
+
+        roller_motor_one = SparkMax(
+            config.roller_port_one, SparkLowLevel.MotorType.kBrushless
+        )
+        roller_motor_two = SparkMax(
+            config.roller_port_two, SparkLowLevel.MotorType.kBrushless
+        )
+        roller_motor_two.setInverted(
+            True
+        )  # we're going to have to figure out which one to actually invert
 
         self.roller = MotorControllerGroup(roller_motor_one, roller_motor_two)
 
@@ -61,7 +67,9 @@ class Arm(ProfiledPIDSubsystem):
 
     @property
     def is_up(self) -> bool:
-        return self.getMeasurement() > 45 # goal is about 50, but we want to be tolerant
+        return (
+            self.getMeasurement() > 45
+        )  # goal is about 50, but we want to be tolerant
 
     def lower_arm(self):
         if self.is_up:

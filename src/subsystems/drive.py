@@ -110,9 +110,7 @@ class Drive(Subsystem):
         self.front_left.set(
             self.pid.calculate(self.encoders.front_left.getVelocity(), 0)
         )
-        self.rear_left.set(
-            self.pid.calculate(self.encoders.rear_left.getVelocity(), 0)
-        )
+        self.rear_left.set(self.pid.calculate(self.encoders.rear_left.getVelocity(), 0))
         self.front_right.set(
             self.pid.calculate(self.encoders.front_right.getVelocity(), 0)
         )

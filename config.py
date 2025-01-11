@@ -20,13 +20,12 @@ class DriveMotorConfig(NamedTuple):
 
     front_right_port: int
     rear_right_port: int
-    
+
     constraints: TrapezoidProfile.Constraints
 
     K_P: float = 0.2
     K_I: float = 0.0
     K_D: float = 0.0
-
 
 
 class ArmConfig(NamedTuple):

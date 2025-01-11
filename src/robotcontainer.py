@@ -22,7 +22,15 @@ from wpilib import RobotController
 
 class RobotContainer:
     # slots to define what attributes the class should expect to hold
-    __slots__ = ("vision", "drivetrain", "arm", "odometry", "controller", "auto_chooser", "driver_assist")
+    __slots__ = (
+        "vision",
+        "drivetrain",
+        "arm",
+        "odometry",
+        "controller",
+        "auto_chooser",
+        "driver_assist",
+    )
 
     def __init__(self):
         self.controller = CommandXboxController(0)
