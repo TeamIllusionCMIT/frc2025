@@ -129,9 +129,13 @@ class RobotContainer:
             RunCommand(lambda: self.arm.expel(1), self.arm)
         )
         self.controller.b().onTrue(
-            RunCommand(self.drivetrain.brake, self.drivetrain) # brake when the button is pressed
+            RunCommand(
+                self.drivetrain.brake, self.drivetrain
+            )  # brake when the button is pressed
         ).onFalse(
-            RunCommand(self.drivetrain.coast, self.drivetrain) # coast when the button is released
+            RunCommand(
+                self.drivetrain.coast, self.drivetrain
+            )  # coast when the button is released
         )
 
     def getAutonomousCommand(self) -> PathPlannerAuto:
