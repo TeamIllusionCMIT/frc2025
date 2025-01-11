@@ -14,7 +14,7 @@ from config import DriveMotorConfig, PhotonCameraConfig, ArmConfig
 from src.constants import unit, Chassis
 from src.commands.driver_assist import DriverAssist
 
-from pathplannerlib.auto import AutoBuilder
+from pathplannerlib.auto import AutoBuilder, PathPlannerAuto
 from pathplannerlib.config import RobotConfig, PIDConstants
 from pathplannerlib.controller import PPHolonomicDriveController
 from wpilib import RobotController
@@ -80,7 +80,7 @@ class RobotContainer:
             self.drivetrain,
         )
 
-        self.auto_chooser = AutoBuilder.buildAutoChooser()
+        self.auto_chooser = AutoBuilder.buildAutoChooser("barge park (5pts)")
 
         # add autonomous selection and battery voltage to dashboard
         SmartDashboard.putData(self.auto_chooser)
@@ -134,5 +134,5 @@ class RobotContainer:
             RunCommand(self.drivetrain.coast, self.drivetrain) # coast when the button is released
         )
 
-    def getAutonomousCommand(self):
+    def getAutonomousCommand(self) -> PathPlannerAuto:
         return self.auto_chooser.getSelected()

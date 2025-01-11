@@ -1,5 +1,5 @@
 from commands2 import CommandScheduler, TimedCommandRobot, WaitCommand
-from wpilib import Preferences, CameraServer
+from wpilib import Preferences, CameraServer, SmartDashboard
 from src.robotcontainer import RobotContainer
 
 
@@ -15,6 +15,10 @@ class Robot(TimedCommandRobot):
         self.core = RobotContainer()
 
         Preferences.initBoolean("auto_active", False)
+
+    def disabledPeriodic(self) -> None:
+        # TODO: edit this to allow for some slight tolerance in the starting position
+        SmartDashboard.putBoolean("position correct?", self.core.getAutonomousCommand()._startingPose == self.core.odometry.estimate_pose())
 
     def robotPeriodic(self) -> None:
         CommandScheduler.getInstance().run()
